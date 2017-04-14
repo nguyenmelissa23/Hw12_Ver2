@@ -2,12 +2,11 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 const Customer = require("./bamazonCustomer");
 const Manager = require("./bamazonManager");
-const Server = require("./server");
 const Store = require("./storeFunctions");
-console.log(Store);
+
 const Command = {
 
-    switchView: function (){
+    switchView: function(){
         inquirer.prompt({
             type: 'list', 
             name: 'view', 
@@ -32,7 +31,7 @@ const Command = {
             choices: ['VIEW PRODUCTS FOR SALE', 'VIEW LOW INVENTORY', 'ADD TO INVENTORY', 'ADD NEW PRODUCT']
         }]).then(function(ans){
             if (ans.action === 'VIEW PRODUCTS FOR SALE'){
-                Store.displayItems();
+                Store.displayItems(Command.managerOpt);
             }
             else if (ans.action === 'VIEW LOW INVENTORY') {
                 console.log('view low inventory');
@@ -55,6 +54,7 @@ const Command = {
             choices: ['SEE ALL ITEMS', 'BUY ITEM', 'EXIT STORE']
         }
         ]).then(function(ans){
+            Server.connectServer(Server.userInfo);
             if (ans.action === 'SEE ALL ITEMS'){
                 Store.displayItems();
             }
@@ -72,20 +72,22 @@ const Command = {
             choices: ['SEE DEPARTMENT OUTPUT', 'SEE ALL DEPARTMENT','EXIT STORE']
         }
         ]).then(function(ans){
+            Server.connectServer(Server.userInfo);
             if (ans.action === 'SEE DEPARTMENT OUTPUT'){
                 console.log('Department output');
             }
             else if (ans.action === 'SEE ALL DEPARTMENT') {
-                console.log('All departments')
+                console.log('All departments');
             } else console.log('Have a nice day!');
         });
     }
 
 };
 
-Server.connectInfo();
-
 module.exports = Command;
+const Server = require("./server");
+Server(Command.switchView);
 
-//console.log(Command);
+
+
 

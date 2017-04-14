@@ -1,41 +1,22 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-let userInfo;
-let connection;
 const Command = require("./bamazonCommand");
-const connectInfo = function(){
-        inquirer.prompt([
-            {
-                name:"user",
-                message: "Sever Username: "
-            }, {
-                type: "password",
-                name: "pwd",
-                message: "Server Password: "
-            }
-        ]).then(function(ans){
-            console.log('server function');
-            userInfo = {user: ans.user, pwd: ans.pwd};
-            connectServer();
-        });
-    };
-function connectServer(){
+
+const connectServer = function(options){
     connection = mysql.createConnection({
         host: "localhost",
         port: 3306, 
-        user: userInfo.user,
-        password: userInfo.pwd, 
+        user: 'melissa',
+        password: 'mypassword', 
         database: "bamazon_db"
     });
     connection.connect(function(err){
         if (err) throw err;
         console.log("connected as id " + connection.threadId);
-        
+        options();
     });
 }
 
-//console.log(JSON.stringify(JSON.stringify(Command)));
-//Command.switchView();
-module.exports = {connection: connection, 
-                connectInfo: connectInfo};
+module.exports = connectServer;
+               
 
