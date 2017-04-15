@@ -21,7 +21,7 @@ VALUES  (1,"Surf Board","Sporting Goods",400.00,1),
         (7,"Mandles","Clothing and Accessories",100,15),
         (8,"Metal Bed","Furniture",300,5),
         (9,"Metal Lifejacket","Sporting Goods",100,0 ),
-        (10,"Non-Functional City Bus","Automobile", 20000,10 );
+        (10,"Non-Functional City Bus","Automobiles", 20000,10 );
 
 -- Challenge 3: 
 
@@ -32,3 +32,13 @@ CREATE TABLE departments(
    total_sales INT(11) default 0 NOT NULL, 
    PRIMARY KEY (`department_id`) 
 );
+
+INSERT INTO departments (department_id, department_name, over_head_costs, total_sales) 
+VALUES  (null, "Sporting Good", 32, 10),
+        (null, "Clothing and Accessories", 324, 31),
+        (null, "Magic", 42, 35),
+        (null, "Automobile", 21, 4),
+        (null, "Furniture", 31, 4), 
+        (null, "Toys", 32, 0);
+
+

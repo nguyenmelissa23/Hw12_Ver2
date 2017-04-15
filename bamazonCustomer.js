@@ -1,69 +1,85 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const Command = require("./bamazonCommand");
-const Store = require("./storeFunctions");
+const Server = require("./server");
 
 const Customer = {
 
-    userBuyInput: function(){
+    customerOpt : function(){
         inquirer.prompt([{
-            name: 'id',
-            message: 'Please input the id of the item you would like to buy: '
-        },{
-            name: 'num',
-            message: 'Please input the quantity of the item you are buying: '
-        }]).then(function(ans){ 
-            console.log('checking if the item is in stock');
-            Store.ifInStock(ans.id, ans.num, buyItem, customerOpt);
+            type: 'list', 
+            name: 'action',
+            message: 'Choose the next action: ',
+            choices: ['SEE ALL ITEMS', 'BUY ITEM', 'EXIT STORE']
+        }
+        ]).then(function(ans){
+            if (ans.action === 'SEE ALL ITEMS'){
+                Store.displayItems(Customer.customerOpt);
+            }
+            else if (ans.action === 'BUY ITEM') {
+                Customer.userBuyInput(Customer.customerOpt);
+            } else {
+                console.log('Have a nice day!');
+                // Command.switchView();
+            }
         });
     },
 
-    // ifInStock: function(id, buyQuantity){
-    //     let query = 'SELECT * FROM products WHERE ?';
-    //     let data = {item_id: id};
-    //     connection.query(query, data, function(err, result){
-    //         if (err) throw err;
-    //         console.log('getting stock quantity');
-    //         console.log("RESULT" + JSON.stringify(result));
-    //         let stockQuantity = result[0].stock_quantity;
-    //         let item = result[0].product_name;
-    //         let cost = result[0].price;
-    //         let itemID = result[0].item_id;
-    //         if (stockQuantity < parseInt(buyQuantity,5)){
-    //             console.log('Insufficient quantity');
-    //             console.log('Choose different item');
-    //             Command.customerOpt();
-    //         } else if (stockQuantity >= parseInt(buyQuantity,5)){
-    //             console.log('Item is in stock');
-    //             console.log('Proceeding your order...');
-    //             console.log("buyItem()");
-    //             let newQuantity = buyItem(item, stockQuantity, buyQuantity);
-    //             Store.updateQuantity(newQuantity, itemID);
-    //             Customer.purchaseSummary(itemID, buyQuantity, cost);
-    //             Command.customerOpt();
-    //         } else if (!stockQuantity){
-    //             console.log('Possible error');
-    //             Command.customerOpt();
-    //         }
-    //     });    
-    // },
+    userBuyInput: function(options){
+        inquirer.prompt([{
+            name: 'id',
+            message: 'Id of the item: '
+        },{
+            name: 'num',
+            message: 'Quantity: '
+        }]).then(function(ans){ 
+            console.log('Checking if the item is in stock');
+            Customer.ifInStock(ans.id, ans.num);
+        });
+    },
+
+    ifInStock: function(id, requiredQuantity){
+        let query = 'SELECT * FROM products WHERE ?';
+        let data = {item_id: id};
+        connection.query(query, data, function(err, result){
+            if (err) throw err;
+            console.log('Getting stock quantity');
+            let stockQuantity = result[0].stock_quantity;
+            let item = result[0].product_name;
+            let cost = result[0].price;
+            let itemID = result[0].item_id;
+            if (stockQuantity < parseInt(requiredQuantity,4)){
+                console.log('Insufficient quantity');
+                console.log('Choose different item');
+                Customer.customerOpt();
+            } else if (stockQuantity >= parseInt(requiredQuantity,4)){
+                console.log('Item is in stock');
+                console.log('Proceeding your order...');
+                let newQuantity = Customer.buyItem(item, stockQuantity, requiredQuantity);
+                Customer.updateQuantity(newQuantity, requiredQuantity, itemID, cost);
+            } else if (!stockQuantity){
+                console.log('Possible error');
+                Customer.customerOpt();
+            }
+        });    
+    },
 
     buyItem: function(item, stockQuantity, buyQuantity){
         let newQuantity = stockQuantity - buyQuantity;
-        if (newQuantity < 0) console.log('not enough stock');
+        if (newQuantity < 0) console.log('Not enough stock');
         return newQuantity;
     },
 
-    updateQuantity: function (quantity, id){
+    updateQuantity: function (newQuantity, buyQuantity, id, cost){
         let query = 'UPDATE products SET ? WHERE ?';
         let data = [{
-            stock_quantity: quantity
+            stock_quantity: newQuantity
         },{
             item_id: id
         }];
         connection.query(query , data, function(err){
             if (err) throw err;
-            console.log('Update quantity = ' + quantity + ' for item with id of ' + id);
+            Customer.purchaseSummary(id, buyQuantity, cost);
         });
     },
 
@@ -75,11 +91,11 @@ const Customer = {
             if (err) throw err;
             console.log(`
                 YOUR PURCHASE SUMMARY:
-                Product Name:   ${result[0].product_name}
-                Unit Price:     ${result[0].price}
-                Total Cost:     ${totalCost}
+            Product Name:   ${result[0].product_name}
+            Unit Price:     ${result[0].price}
+            Total Cost:     ${totalCost}
             `);
-            Command.customerOpt();
+            Customer.customerOpt();
         }); 
     }
 
